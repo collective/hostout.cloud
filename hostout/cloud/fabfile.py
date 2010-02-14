@@ -12,7 +12,7 @@ from fabric import api
 
 def _driver():
     hostout = api.env.get('hostout')
-    hosttype = hostout.options.get('hosttype')
+    hosttype = api.env.get('hosttype')
     #EC2_US_EAST	Amazon AWS US N. Virgina
     #EC2_US_WEST	Amazon AWS US N. California
     #EC2_EU_WEST	Amazon AWS EU Ireland
@@ -54,21 +54,24 @@ def printnode():
     print node
 
 def create():
-    node = _node()
     hostout = api.env.get('hostout')
     filename, dsa_key = hostout.getIdentityKey()
+    node = _node()
     if node is None:
             
-        hostname = hostout.options.get('hostname')
-        hostos = hostout.options.get('hostos', 'Ubuntu 9.10 (karmic)')
-        hostsize = int(hostout.options.get('hostsize', 256))
+        hostname = api.env.get('hostname')
+        hostos = api.env.get('hostos', 'Ubuntu')
+        hostsize = int(api.env.get('hostsize', 256))
         driver = _driver()
         sizes = driver.list_sizes()
-        size =  filter(lambda x: x.ram ==  hostsize, sizes)[0]
+        sizes.sort(lambda x,y: cmp(x.ram,y.ram))
+        size =  filter(lambda x: x.ram <=  hostsize, sizes)[-1]
         images = driver.list_images()
-        image=  filter(lambda x: x.name ==  hostos, images)[0]
-        hostout = api.env.get('hostout')
-        node = driver.create_node(size=size, name=hostname, image=image, files={'/root/.ssh/authorized_keys':dsa_key})
+        images.sort(lambda x,y: cmp(x.name,y.name))
+        image=  filter(lambda x: x.name.lower().startswith(hostos), images)[-1]
+        node = driver.create_node(size=size, name=hostname,
+                                  image=image,
+                                  files={'/root/.ssh/authorized_keys':dsa_key})
         print node.extra.get('password')
         while _node().state != 'ACTIVE':
             print _node().state
@@ -76,8 +79,7 @@ def create():
     api.env.hosts = node.public_ip[0:1]
     api.env.user = 'root'
     api.env.key_filename=filename
-    print api.env
-    
+
 
 def reboot():
     print _node().reboot()
@@ -88,3 +90,12 @@ def destroy():
 def predeploy():
         create()
 
+def bootstrap():
+    while True:
+        print "trying to connect"
+        try:
+            api.run("echo 'Server now booted'")
+            break
+        except Exception,e:
+            pass
+            

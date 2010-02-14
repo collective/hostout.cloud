@@ -28,8 +28,11 @@ class Recipe:
 
     def __init__(self, buildout, name, options):
         self.name, self.options, self.buildout = name, options, buildout
-        hostname = self.options.setdefault('hostname', name)
-        hosttype = self.options['hosttype']
+        self.options.setdefault('hostname', name)
+        self.options.setdefault('hostimage', 'Ubuntu')
+        self.options.setdefault('hostsize', '256')
+
+        
 
         self.options['fabfiles'] = fabfile = resource_filename(__name__, 'fabfile.py')
 
