@@ -51,11 +51,11 @@ def _node(refresh=False):
        node = filter(lambda x: x.extra['keyname'] == hostname, list)
     else:
        node = filter(lambda x: x.name == hostname, list)
-        
+    node = filter(lambda x: x.state != NodeState.TERMINATED, list)
     if node:
         node = node[0]
     else:
-        print "Host not found. %s" % ' '.join([ n.name for n in nodes])
+        print "Host not found. %s" % ' '.join([ n for n in nodes])
         return
     nodes[hostname] = node
     return node
@@ -106,8 +106,8 @@ def create():
         if driver.type == Provider.EC2:
             # Create a unique keypair for this host
             filename = api.env.get('identity-file')
-            if not filename or filename and os.path.exists(filename):
-                raise Exception("Identity file must not exist to create EC2 Nodes as it will be overwritten")
+            #if not filename or filename and os.path.exists(filename):
+            #    raise Exception("Identity file must not exist to create EC2 Nodes as it will be overwritten")
             params = {'Action': 'DeleteKeyPair',
                       'KeyName': hostname,
             }
@@ -121,11 +121,20 @@ def create():
             key_file = open(filename,"w")
             key_file.write(key)
             key_file.close()
-            args['keyname'] = hostname
+            args['ex_keyname'] = hostname
             api.env.key_filename = filename
+            
+            #also create security group
+            try:
+                driver.ex_create_security_group(hostname, 'hostout.cloud instance for %s'%hostname)
+            except:
+                pass
+            driver.ex_authorize_security_group_permissive(hostname)
+            args['ex_securitygroup'] = hostname
+            
         elif driver.type == Provider.RACKSPACE:
             filename, key = hostout.getIdentityKey()
-            args['files']={'/root/.ssh/authorized_keys':key}
+            args['ex_files']={'/root/.ssh/authorized_keys':key}
 
         node = driver.create_node(size=size, name=hostname,
                                   image=image,
@@ -140,6 +149,7 @@ def _wait(states):
         print "State: %s" % node.state
     while node and node.state not in states:
         node = _node(refresh=True)
+        print "State: %s" % node.state
         print ".",
 
 
