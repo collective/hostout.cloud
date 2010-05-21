@@ -38,6 +38,15 @@ def _driver():
     args = [hostout.options.get(a) for a in spec.args[1:] if hostout.options.get(a) ]
     driver = driver(**vargs)
     return driver
+
+def _nodes(refresh=False):
+    hostout = api.env.get('hostout')
+    hostname = hostout.options.get('hostname')
+
+    driver = _driver()
+    list = driver.list_nodes()
+    return list
+
   
 def _node(refresh=False):
     hostout = api.env.get('hostout')
@@ -51,7 +60,7 @@ def _node(refresh=False):
        node = filter(lambda x: x.extra['keyname'] == hostname, list)
     else:
        node = filter(lambda x: x.name == hostname, list)
-    node = filter(lambda x: x.state != NodeState.TERMINATED, list)
+    node = filter(lambda x: x.state != NodeState.TERMINATED, node)
     if node:
         node = node[0]
     else:
@@ -80,6 +89,8 @@ def printnode():
 def create():
     """Construct node on nominated provider"""
     hostout = api.env.get('hostout')
+    if hostout.options.get('host'):
+        return
     node = _node()
     if node is None:
             
@@ -141,6 +152,7 @@ def create():
                                   **args)
         print node.extra.get('password')
 
+    print _nodes()
     _wait([NodeState.RUNNING, 'ACTIVE'])
     
 def _wait(states):
