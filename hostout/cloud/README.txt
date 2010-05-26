@@ -71,5 +71,43 @@ Supported Cloud providers
 hostout.cloud uses libcloud_. See the libcloud_ site for the supported serviers and options
 for each.
 
-Currently rackspace cloud is the only provider tested
+Currently rackspace cloud and Ec2 are all thats tested.
+
+Common options
+**************
+
+hostname
+  Unique name to create the VM
+
+hostsize
+  The desired RAM size in MB. You will get the closet VM with at least this size
+
+Rackspace
+*********
+
+key
+  your username
+  
+secret
+  your api password
+
+hostos
+  the title of the OS as shown on the distributions selection list
+  
+Amazon Ec2
+**********
+
+key
+  
+
+secret
+  api secret key
+
+key_filename
+  path to your pem file
+
+hostos
+  is set to the image title
+
+
 
