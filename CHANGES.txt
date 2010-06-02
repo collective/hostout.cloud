@@ -1,0 +1,6 @@
+
+1.0a2 (??)
+----------
+- use fabfile entrypoint
+- ec2 now working
+- deploy with create works now
