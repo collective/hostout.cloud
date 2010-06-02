@@ -36,8 +36,6 @@ class Recipe:
 
         
 
-        self.options['fabfiles'] = fabfile = resource_filename(__name__, 'fabfile.py')
-
     def install(self):
         return []
 

@@ -4,7 +4,7 @@ import sys, os
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-version = '1.0a1'
+version = '1.0a2'
 
 setup(name='hostout.cloud',
       version=version,
@@ -32,6 +32,7 @@ setup(name='hostout.cloud',
 #          'zope.interface>=0.1',
           'setuptools',
         ],
-      entry_points = {'zc.buildout':
-                    ['default = hostout.cloud:Recipe']},
+      entry_points = {'zc.buildout':['default = hostout.cloud:Recipe'],
+                    'fabric': ['fabfile = hostout.cloud.fabfile'],
+                        }
       )
