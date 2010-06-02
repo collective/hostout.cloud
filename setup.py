@@ -4,7 +4,7 @@ import sys, os
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-version = '1.0a2'
+version = '1.0a3'
 
 setup(name='hostout.cloud',
       version=version,
@@ -27,7 +27,7 @@ setup(name='hostout.cloud',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-          'collective.hostout',
+          'collective.hostout>=1.0a3',
           'apache-libcloud',
 #          'zope.interface>=0.1',
           'setuptools',
