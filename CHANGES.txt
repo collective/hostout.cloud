@@ -1,6 +1,11 @@
 
-1.0a2 (??)
-----------
+1.0a2 (2010-06-03)
+------------------
 - use fabfile entrypoint
 - ec2 now working
 - deploy with create works now
+
+1.0a1 (unreleased)
+------------------
+- rackspace cloud working
+- initial verion
