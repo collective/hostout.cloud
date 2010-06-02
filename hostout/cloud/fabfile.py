@@ -74,8 +74,8 @@ def initcommand(cmd):
     node = _node()
     if node and node.public_ip[0:1]:
         api.env.hosts = node.public_ip[0:1]
-        api.env.hostout.options['user'] = 'root'
-        api.env.user = 'root'
+#        api.env.hostout.options['user'] = 'root'
+#        api.env.user = 'root'
         key_filename = api.env['identity-file']
         if os.path.exists(key_filename):
             api.env.key_filename = key_filename
@@ -95,7 +95,8 @@ def create():
     if node is None:
             
         hostname = api.env.get('hostname')
-        hostos = api.env.get('hostos', 'Ubuntu')
+        hostos = api.env.get('hostos', 'Ubuntu').lower()
+        imageid = api.env.get('imageid','').lower()
         hostsize = int(api.env.get('hostsize', 256))
         driver = _driver()
         sizes = driver.list_sizes()
@@ -107,11 +108,15 @@ def create():
         size = contenders[-1]
         images = driver.list_images()
         images.sort(lambda x,y: cmp(x.name,y.name))
-        contenders =  filter(lambda x: x.name.lower().startswith(hostos), images)
+        if imageid:
+            contenders =  filter(lambda x: x.id.lower().startswith(imageid), images)
+        else:
+            contenders =  filter(lambda x: x.name.lower().startswith(hostos), images)
         if not contenders:
             print "No node available with <=%(hostsize)sMB on %(hosttype)s" % api.env
             return
         image = contenders[-1]
+        print "Using the image %s (%s)." % (image.name,image.id)
         
         args = {}
         if driver.type == Provider.EC2:
@@ -154,14 +159,15 @@ def create():
 
     print _nodes()
     _wait([NodeState.RUNNING, 'ACTIVE'])
+    initcommand('predeploy')
     
 def _wait(states):
     node = _node(refresh=True)
     if node and node.state not in states:
         print "State: %s" % node.state
-    while node and node.state not in states:
+    while node and (node.state not in states or not node.public_ip[0:1]):
         node = _node(refresh=True)
-        print "State: %s" % node.state
+        print "State: %s, IP: %s" % (node.state, node.public_ip[0:1])
         print ".",
 
 

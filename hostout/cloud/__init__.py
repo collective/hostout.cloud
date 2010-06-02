@@ -32,6 +32,7 @@ class Recipe:
         self.options.setdefault('hostimage', 'Ubuntu')
         self.options.setdefault('hostsize', '256')
         self.options.setdefault('secure', 'True')
+        self.options.setdefault('imageid','')
 
         
 

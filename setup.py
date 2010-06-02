@@ -4,7 +4,7 @@ import sys, os
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-version = '0.1'
+version = '1.0a1'
 
 setup(name='hostout.cloud',
       version=version,
@@ -19,7 +19,7 @@ setup(name='hostout.cloud',
       keywords='hostout',
       author='Dylan Jay',
       author_email='software@pretaweb.com',
-      url='',
+      url='http://github.com/djay/hostout.cloud',
       license='',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       namespace_packages = ['hostout'],
