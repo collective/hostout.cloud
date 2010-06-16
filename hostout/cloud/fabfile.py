@@ -34,8 +34,10 @@ def _driver():
     for a in spec.args[1:]:
         api.require(a)
                     #"Th(is|ese) variable(s) (are|is) used for logging into your %(hosttype)s account" %locals())
-    vargs = dict([(a,hostout.options.get(a)) for a in spec.args[1:] if hostout.options.get(a) ])
-    args = [hostout.options.get(a) for a in spec.args[1:] if hostout.options.get(a) ]
+    passarg = lambda a: hostout.options.get(a,None) is not None and a not in ['host']
+    vargs = dict([(a,hostout.options.get(a)) for a in spec.args[1:] if passarg(a)])
+    args = [hostout.options.get(a) for a in spec.args[1:] if hostout.options.get(a,None) is not None ]
+    #print (args,vargs)
     driver = driver(**vargs)
     return driver
 
@@ -74,11 +76,6 @@ def initcommand(cmd):
     node = _node()
     if node and node.public_ip[0:1]:
         api.env.hosts = node.public_ip[0:1]
-#        api.env.hostout.options['user'] = 'root'
-#        api.env.user = 'root'
-        key_filename = api.env['identity-file']
-        if os.path.exists(key_filename):
-            api.env.key_filename = key_filename
     
 
 def printnode():
@@ -91,7 +88,7 @@ def create():
     hostout = api.env.get('hostout')
     if hostout.options.get('host'):
         return
-    node = _node()
+    node = _node(refresh=True)
     if node is None:
             
         hostname = api.env.get('hostname')
@@ -157,7 +154,7 @@ def create():
                                   **args)
         print node.extra.get('password')
 
-    print _nodes()
+    #print _nodes()
     _wait([NodeState.RUNNING, 'ACTIVE'])
     initcommand('predeploy')
     
@@ -176,6 +173,9 @@ def reboot():
     print _node().reboot()
 
 def destroy():
+    if _node() is None:
+        print "Node already destroyed"
+        return
     print _node().destroy()
     driver = _driver()
     if driver.type == Provider.EC2:
