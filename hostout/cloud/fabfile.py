@@ -27,7 +27,8 @@ def _driver():
     #VCLOUD	vmware vCloud
     #RIMUHOSTING	RimuHosting.com    
     
-    
+    if not hasattr(Provider, hosttype.upper()):
+        return None
     driver = providers.get_driver( getattr(Provider, hosttype.upper()) )
     
     spec = inspect.getargspec(driver.__init__)
@@ -41,11 +42,26 @@ def _driver():
     driver = driver(**vargs)
     return driver
 
+def list_providers():
+    """List of options for 'provider' """
+    for attr in dir(Provider):
+        if '_' != attr[0]:
+            print attr
+
+def list_nodes():
+    """Names of nodes currently active"""
+    for node in _nodes():
+        name = node.name
+        ip = node.public_ip[0]
+        print "%s (%s)" % (name,ip)
+
 def _nodes(refresh=False):
     hostout = api.env.get('hostout')
     hostname = hostout.options.get('hostname')
 
     driver = _driver()
+    if not driver:
+        return []
     list = driver.list_nodes()
     return list
 
@@ -57,6 +73,8 @@ def _node(refresh=False):
         return nodes[hostname]
 
     driver = _driver()
+    if not driver:
+        return None
     list = driver.list_nodes()
     if driver.type == Provider.EC2:
        node = filter(lambda x: x.extra['keyname'] == hostname, list)

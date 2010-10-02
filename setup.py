@@ -29,7 +29,7 @@ setup(name='hostout.cloud',
           # -*- Extra requirements: -*-
           'collective.hostout>=1.0a3',
           'apache-libcloud',
-#          'zope.interface>=0.1',
+          'zope.interface>=0.1',
           'setuptools',
         ],
       entry_points = {'zc.buildout':['default = hostout.cloud:Recipe'],
