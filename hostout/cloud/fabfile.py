@@ -6,12 +6,15 @@ from libcloud import providers
 import inspect
 from fabric import api
 import sys
+import re
   
 #drivers = [ EC2('access key id', 'secret key'), 
 #            Slicehost('api key'), 
 #            Rackspace('username', 'api key') ] 
 
 nodes = {}
+
+AMI = {'ubuntu': re.compile("^ubuntu-images-us/ubuntu.*")}
 
 def _driver():
     hostout = api.env.get('hostout')
@@ -54,6 +57,32 @@ def list_nodes():
         name = node.name
         ip = node.public_ip[0]
         print "%s (%s)" % (name,ip)
+
+
+def list_sizes():
+        driver = _driver()
+        sizes = driver.list_sizes()
+        sizes.sort(lambda x,y: cmp(x.ram,y.ram))
+#        contenders = filter(lambda x: x.ram <=  hostsize, sizes)
+
+
+#        if not contenders:
+#            print "No node available with <=%(hostsize)sMB on %(hosttype)s" % api.env
+#            return
+#        size = contenders[-1]
+        
+        for size in sizes:
+            print size
+
+def list_images(hostos = ""):
+        driver = _driver()
+
+        images = driver.list_images()
+        images.sort(lambda x,y: cmp(x.name,y.name))
+        #ubuntu-images/ubuntu-lucid-10.04-amd64--server-20101020
+        for image in images:
+                print image
+
 
 def _nodes(refresh=False):
     hostout = api.env.get('hostout')
@@ -112,21 +141,29 @@ def create():
         hostname = api.env.get('hostname')
         hostos = api.env.get('hostos', 'Ubuntu').lower()
         imageid = api.env.get('imageid','').lower()
-        hostsize = int(api.env.get('hostsize', 256))
+        hostsize = api.env.get('hostsize', 256)
+        if hostsize:
+            hostsize = int(hostsize)
         driver = _driver()
         sizes = driver.list_sizes()
         sizes.sort(lambda x,y: cmp(x.ram,y.ram))
-        contenders = filter(lambda x: x.ram <=  hostsize, sizes)
-        if not contenders:
-            print "No node available with <=%(hostsize)sMB on %(hosttype)s" % api.env
-            return
-        size = contenders[-1]
+        if hostsize:
+            contenders = filter(lambda x: x.ram <=  hostsize, sizes)
+            if not contenders:
+                print "No node available with <=%(hostsize)sMB on %(hosttype)s" % api.env
+                return
+            size = contenders[-1]
+        else:
+            size = sizes[0] #get smallest
         images = driver.list_images()
-        images.sort(lambda x,y: cmp(x.name,y.name))
+        images.sort(lambda x,y: cmp(x.id, y.id))
         if imageid:
             contenders =  filter(lambda x: x.id.lower().startswith(imageid), images)
         else:
-            contenders =  filter(lambda x: x.name.lower().startswith(hostos), images)
+            _re = AMI.get(hostos.lower(), None)
+            if _re:
+                images = [image for image in images if _re.match(image.name)]
+            contenders = [image for image in images if image.name.lower().startswith(hostos)]
         if not contenders:
             print "No node available with <=%(hostsize)sMB on %(hosttype)s" % api.env
             return

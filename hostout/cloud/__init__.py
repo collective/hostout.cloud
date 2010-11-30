@@ -30,7 +30,7 @@ class Recipe:
         self.name, self.options, self.buildout = name, options, buildout
         self.options.setdefault('hostname', name)
         self.options.setdefault('hostimage', 'Ubuntu')
-        self.options.setdefault('hostsize', '256')
+        self.options.setdefault('hostsize', '')
         self.options.setdefault('secure', 'True')
         self.options.setdefault('imageid','')
 
