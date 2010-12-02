@@ -162,7 +162,6 @@ def create():
                         size = contender
         else:
             size = sizes[0] #get smallest
-        import pdb;pdb.set_trace()  ## Breakpoint ##
         images = driver.list_images()
         images.sort(lambda x,y: cmp(x.id, y.id))
         if imageid:
