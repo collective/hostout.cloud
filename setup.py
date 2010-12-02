@@ -4,7 +4,7 @@ import sys, os
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-version = '1.0a4'
+version = '1.0a5'
 
 setup(name='hostout.cloud',
       version=version,

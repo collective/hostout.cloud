@@ -142,6 +142,7 @@ def create():
         hostos = api.env.get('hostos', 'Ubuntu').lower()
         imageid = api.env.get('imageid','').lower()
         hostsize = api.env.get('hostsize', 256)
+        hostsize_name = api.env.get('hostsize_name', None)
         if hostsize:
             hostsize = int(hostsize)
         driver = _driver()
@@ -152,9 +153,16 @@ def create():
             if not contenders:
                 print "No node available with <=%(hostsize)sMB on %(hosttype)s" % api.env
                 return
+            # allow to use any instance type sharing the same size 
+            # (eg on ec2: m1.large and c1.xlarge are both at 7g)
             size = contenders[-1]
+            if hostsize_name:
+                for contender in contenders:
+                    if hostsize_name in (contender.id, contender.name):
+                        size = contender
         else:
             size = sizes[0] #get smallest
+        import pdb;pdb.set_trace()  ## Breakpoint ##
         images = driver.list_images()
         images.sort(lambda x,y: cmp(x.id, y.id))
         if imageid:
