@@ -1,3 +1,7 @@
+1.0a5
+------
+- add support to choose your instance type size (exemple ``m1.large`` on EC2)
+
 1.04 
 ----
 - fixed some bugs
