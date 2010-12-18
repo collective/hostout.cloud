@@ -120,9 +120,10 @@ def _node(refresh=False):
 
 def initcommand(cmd):
     """Called before every connection to set host and login"""
-    node = _node()
-    if node and node.public_ip[0:1]:
-        api.env.hosts = node.public_ip[0:1]
+    if not api.env.get('host'):
+        node = _node()
+        if node and node.public_ip[0:1]:
+            api.env.hosts = node.public_ip[0:1]
     
 
 def printnode():
@@ -161,7 +162,7 @@ def create():
             contenders =  filter(lambda x: x.id.lower().startswith(imageid), images)
         else:
             _re = AMI.get(hostos.lower(), None)
-            if _re:
+            if _re and driver.type == Provider.EC2:
                 images = [image for image in images if _re.match(image.name)]
             contenders = [image for image in images if image.name.lower().startswith(hostos)]
         if not contenders:
