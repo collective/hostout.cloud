@@ -124,6 +124,8 @@ def initcommand(cmd):
         node = _node()
         if node and node.public_ip[0:1]:
             api.env.hosts = node.public_ip[0:1]
+    if not api.env.get('user'):
+        api.env.user = 'root'
     
 
 def printnode():
@@ -219,6 +221,7 @@ def create():
 
     #print _nodes()
     _wait([NodeState.RUNNING, 'ACTIVE'])
+    api.env.hostout.bootstrap()
     initcommand('predeploy')
     
 def _wait(states):
@@ -248,7 +251,8 @@ def destroy():
     _wait([None])
   
 def predeploy():
-        create()
+    #test if we can log in without password 
+    create()
 
 def bootstrap():
     while True:
