@@ -223,6 +223,11 @@ def create():
     _wait([NodeState.RUNNING, 'ACTIVE'])
     api.env.hostout.bootstrap()
     initcommand('predeploy')
+
+def is_created():
+    if _node(refresh=True):
+        return True
+    return False
     
 def _wait(states):
     node = _node(refresh=True)
