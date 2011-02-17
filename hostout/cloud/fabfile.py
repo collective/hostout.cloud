@@ -252,7 +252,8 @@ def destroy():
   
 def predeploy():
     #test if we can log in without password 
-    create()
+    api.env.hostout.create()
+    return api.env.houstout.superfun()
 
 def bootstrap():
     while True:
@@ -262,6 +263,10 @@ def bootstrap():
             break
         except Exception,e:
             pass
+
+    return api.env.houstout.superfun()
+
+
 
     
     
