@@ -96,6 +96,8 @@ def _nodes(refresh=False):
 
   
 def _node(refresh=False):
+    
+    
     hostout = api.env.get('hostout')
     hostname = hostout.options.get('hostname')
     if hostname in nodes.keys() and not refresh:
@@ -114,18 +116,29 @@ def _node(refresh=False):
         node = node[0]
     else:
         print "Host not found. %s" % ' '.join([ n for n in nodes])
+        if hostname in nodes:
+            del nodes[hostname]
         return
     nodes[hostname] = node
     return node
 
+
+def setuser():
+    api.env.user = "root"
+
+def sethost():
+    node = _node()
+    if node and node.public_ip[0:1]:
+        api.env.hosts = node.public_ip[0:1]
+    else:
+        api.evn.hosts = []
+
 def initcommand(cmd):
     """Called before every connection to set host and login"""
     if not api.env.get('host'):
-        node = _node()
-        if node and node.public_ip[0:1]:
-            api.env.hosts = node.public_ip[0:1]
+        sethost()
     if not api.env.get('user'):
-        api.env.user = 'root'
+        setuser()
     
 
 def printnode():
@@ -221,14 +234,32 @@ def create():
 
     #print _nodes()
     _wait([NodeState.RUNNING, 'ACTIVE'])
-    api.env.hostout.bootstrap()
-    initcommand('predeploy')
+    sethost()
+    setuser()
+    
+    
 
 def is_created():
     if _node(refresh=True):
         return True
     return False
     
+    
+def nodestate():
+    node = _node(refresh=True)
+    
+    print "Current State: %s IP: %s" % (
+        {
+            0: "RUNNING (0)",
+            1: "REBOOTING (1)",
+            2: "TERMINATED (2)",
+            3: "PENDING (3)",
+            4: "UNKNOWN (4)"
+        }[node.state],
+        node.public_ip )
+    
+    return node.state
+
 def _wait(states):
     node = _node(refresh=True)
     if node and node.state not in states:
@@ -247,7 +278,12 @@ def destroy():
     if _node() is None:
         print "Node already destroyed"
         return
+    
     print _node().destroy()
+    
+    # Froce refresh of the node list
+    _node(True)
+    
     driver = _driver()
     if driver.type == Provider.EC2:
         filename = api.env.get('identity-file')
@@ -256,9 +292,12 @@ def destroy():
     _wait([None])
   
 def predeploy():
-    #test if we can log in without password 
-    api.env.hostout.create()
-    return api.env.houstout.superfun()
+    #test if we can log in without password
+    if not api.env.hostout.is_created():
+        api.env.hostout.create()
+        api.env.hostout.bootstrap()
+        api.env.hostout.setowners()
+    return api.env.superfun()
 
 def bootstrap():
     while True:
@@ -269,7 +308,7 @@ def bootstrap():
         except Exception,e:
             pass
 
-    return api.env.houstout.superfun()
+    return api.env.superfun()
 
 
 
