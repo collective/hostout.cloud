@@ -131,7 +131,7 @@ def sethost():
     if node and node.public_ip[0:1]:
         api.env.hosts = node.public_ip[0:1]
     else:
-        api.evn.hosts = []
+        api.env.hosts = []
 
 def initcommand(cmd):
     """Called before every connection to set host and login"""
