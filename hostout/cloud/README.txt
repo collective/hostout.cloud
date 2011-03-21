@@ -109,5 +109,13 @@ key_filename
 hostos
   is set to the image title
 
+.. _buildout: http://pypi.python.org/pypi/zc.buildout
+.. _recipe: http://pypi.python.org/pypi/zc.buildout#recipes
+.. _fabric: http://fabfile.org
+.. _collective.hostout: http://pypi.python.org/pypi/collective.hostout
+.. _hostout: http://pypi.python.org/pypi/collective.hostout
+.. _supervisor: http://pypi.python.org/pypi/collective.recipe.supervisor
+.. _libcloud: http://incubator.apache.org/libcloud
+
 
 
