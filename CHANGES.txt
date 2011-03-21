@@ -1,6 +1,15 @@
-1.0a5
-------
+1.0a5 (2010-03-21)
+------------------
 - add support to choose your instance type size (exemple ``m1.large`` on EC2)
+- improve image picking algorithm: pick later image_id. on ec2 just use official ubuntu images
+- commands for listing images and sizes.
+- made compatible with collective.hostout 1.0a5
+- libcloud ignored when ipadress specified
+- fix default sudo-user to "root"
+- added ability to test if node has been created: is_created() returning bool
+- fixed how hostout hooks into bootstrap process to create node before bootstrapping
+- fixed "destroy" so "createnode" can work straight afterwards.
+
 
 1.04 
 ----
