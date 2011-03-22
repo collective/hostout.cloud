@@ -241,7 +241,9 @@ def create():
 
 def is_created():
     if _node(refresh=True):
+        print "Node is created"
         return True
+    print "Node is not created"
     return False
     
     
