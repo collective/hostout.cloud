@@ -27,7 +27,7 @@ setup(name='hostout.cloud',
       zip_safe=False,
       install_requires=[
           # -*- Extra requirements: -*-
-          'collective.hostout>=1.0a3',
+          'collective.hostout>=1.0a5',
           'apache-libcloud',
           'zope.interface>=0.1',
           'setuptools',

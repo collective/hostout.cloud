@@ -8,6 +8,21 @@ and a single command is all thats needed to deploy apache, squid, mysql, zope, p
 Installing hostout.cloud
 ************************
 
+Here is the worlds simplest buildout_ which just creates a python script which outputs a single line.
+Checkout buildout_ for the power of what it can really deploy. ::
+
+ [buildout]
+ parts = host1 helloworld
+
+ [helloworld]
+ recipe = zc.recipe.egg:scripts
+ eggs = zc.recipe.egg
+ initialization = import sys
+   main=lambda: sys.stdout.write('all your hosts are below to us!!!')
+ entry-points = helloworld=__main__:main
+
+This is the development buildout which you can build as normal on your local machine.
+
 Add the collective.hostout part to your development buildout. Using the extends
 option we add hostout.cloud to handle creating a host and hostout.ubuntu
 to bootstrap that host ready for deployment.
@@ -26,12 +41,13 @@ to bootstrap that host ready for deployment.
 ...
 ... [host1]
 ... recipe = collective.hostout
-... extends = hostout.cloud hostout.ubuntu
-... hostsize - 256
+... extends = hostout.cloud
+... hostsize = 256
 ... hostos = Ubuntu 9.10
 ... hosttype = rackspacecloud
 ... key = myaccount
 ... secret = myapikey
+... parts = helloworld
 ... """
 ... )
 
@@ -41,27 +57,34 @@ Installing host1.
 Generated script '/sample-buildout/bin/hostout'.
 
 
-Now with a single command everything is done for us
+Now with a single command everything is done for us (see collective.hostout_ for more information)::
 
->>> print system('bin/hostout host1 deploy')
+ >>> print system('bin/hostout host1 deploy')
 
-Our local environment
->>> print system('bin/helloworld')
-all your hosts are below to us!!!
+Now we have both a local testing environment for our app::
 
-is now deployed to the cloud
->>> print system('bin/hostout host1 run bin/helloworld')
-all your hosts are below to us!!!
+ >>> print system('bin/helloworld')
+ all your hosts are below to us!!!
 
-Change your local code and just run deploy again
->>> print system('bin/hostout host1 deploy')
+is now deployed to the cloud in our production environment. We can use the collective.hostout_ run command
+to test this::
 
-Reboot your server
->>> print system('bin/hostout host1 reboot')
+ >>> print system('bin/hostout host1 run bin/helloworld')
+ all your hosts are below to us!!!
 
-and destroy it when you're done
->>> print system('bin/hostout host1 destroy')
+Change your local code and just run deploy again::
 
+ >>> print system('bin/hostout host1 deploy')
+
+Redeploying only uploads whats changed. 
+
+Reboot your server::
+
+ >>> print system('bin/hostout host1 reboot')
+
+and destroy it when you're done::
+
+  >>> print system('bin/hostout host1 destroy')
 
 
 
@@ -71,7 +94,7 @@ Supported Cloud providers
 hostout.cloud uses libcloud_. See the libcloud_ site for the supported serviers and options
 for each.
 
-Currently rackspace cloud and Ec2 are all thats tested.
+Currently rackspacecloud and Ec2 are all thats tested.
 
 Common options
 **************
@@ -93,7 +116,7 @@ secret
 
 hostos
   the title of the OS as shown on the distributions selection list
-  
+
 Amazon Ec2
 **********
 
@@ -108,6 +131,14 @@ key_filename
 
 hostos
   is set to the image title
+
+.. _buildout: http://pypi.python.org/pypi/zc.buildout
+.. _recipe: http://pypi.python.org/pypi/zc.buildout#recipes
+.. _fabric: http://fabfile.org
+.. _collective.hostout: http://pypi.python.org/pypi/collective.hostout
+.. _hostout: http://pypi.python.org/pypi/collective.hostout
+.. _supervisor: http://pypi.python.org/pypi/collective.recipe.supervisor
+.. _libcloud: http://incubator.apache.org/libcloud
 
 
 
