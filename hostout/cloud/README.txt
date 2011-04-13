@@ -55,6 +55,7 @@ to bootstrap that host ready for deployment.
 >>> print system('bin/buildout -N')
 Installing host1.
 Generated script '/sample-buildout/bin/hostout'.
+Generated script '/sample-buildout/bin/helloworld'.
 
 
 Now with a single command everything is done for us (see collective.hostout_ for more information)::

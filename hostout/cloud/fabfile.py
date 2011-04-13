@@ -290,25 +290,23 @@ def destroy():
         if os.path.exists(filename):
             os.remove(filename)
     _wait([None])
-  
-def predeploy():
-    #test if we can log in without password
-    if not api.env.hostout.is_created():
-        api.env.hostout.create()
-        api.env.hostout.bootstrap()
-        api.env.hostout.setowners()
-    return api.env.superfun()
 
 def bootstrap():
-    while True:
-        print "trying to connect"
-        try:
-            api.run("echo 'Server now booted'")
-            break
-        except Exception,e:
-            pass
+    #test if we can log in without password
+    if not api.env.host and not api.env.hostout.is_created():
+        api.env.hostout.create()
+        api.env.superfun()
+        while True:
+            print "trying to connect"
+            try:
+                api.run("echo 'Server now booted'")
+                break
+            except Exception,e:
+                pass
+    else:
+        api.env.superfun()
 
-    return api.env.superfun()
+
 
 
 
