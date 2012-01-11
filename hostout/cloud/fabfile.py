@@ -19,18 +19,11 @@ AMI = {'ubuntu': re.compile("^ubuntu-images-us/ubuntu.*")}
 def _driver():
     hostout = api.env.get('hostout')
     hosttype = api.env.get('hosttype')
-    #EC2_US_EAST	Amazon AWS US N. Virgina
-    #EC2_US_WEST	Amazon AWS US N. California
-    #EC2_EU_WEST	Amazon AWS EU Ireland
-    #RACKSPACE	Rackspace Cloud Servers
-    #SLICEHOST	Slicehost.com
-    #GOGRID	GoGrid
-    #VPSNET	VPS.net
-    #LINODE	Linode.com
-    #VCLOUD	vmware vCloud
-    #RIMUHOSTING	RimuHosting.com    
-    
+
     if not hasattr(Provider, hosttype.upper()):
+        print "No hosttype called %s " % hosttype
+        hosts = [k.lower() for k,v in vars(Provider).items() if type(v) == type(1)]
+        print "Valid hostypes are %s" % ', '.join(hosts)
         return None
     driver = providers.get_driver( getattr(Provider, hosttype.upper()) )
     
@@ -43,6 +36,8 @@ def _driver():
     args = [hostout.options.get(a) for a in spec.args[1:] if hostout.options.get(a,None) is not None ]
     #print (args,vargs)
     driver = driver(**vargs)
+    if driver is None:
+       print "Invalid args to driver"
     return driver
 
 def list_providers():
@@ -76,6 +71,8 @@ def list_sizes():
 
 def list_images(hostos = ""):
         driver = _driver()
+        if driver is None:
+            return
 
         images = driver.list_images()
         images.sort(lambda x,y: cmp(x.name,y.name))
@@ -162,6 +159,8 @@ def create():
         if hostsize:
             hostsize = int(hostsize)
         driver = _driver()
+        if driver is None:
+            return 
         sizes = driver.list_sizes()
         sizes.sort(lambda x,y: cmp(x.ram,y.ram))
         if hostsize:
