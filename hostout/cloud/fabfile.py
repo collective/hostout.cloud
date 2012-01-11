@@ -7,6 +7,8 @@ import inspect
 from fabric import api
 import sys
 import re
+import subprocess
+from StringIO import StringIO
   
 #drivers = [ EC2('access key id', 'secret key'), 
 #            Slicehost('api key'), 
@@ -16,16 +18,114 @@ nodes = {}
 
 AMI = {'ubuntu': re.compile("^ubuntu-images-us/ubuntu.*")}
 
+
+
+reVboxListVMS = re.compile (r'^"([^"]+)" \{([0-9a-z\-]+)\}$')
+def proc_check_output(args):
+    p = subprocess.Popen(args, stdout=subprocess.PIPE)
+    p.wait()
+    if p.returncode != 0: 
+        raise subprocess.CalledProcessError(None, None)
+    return p.stdout.read()
+
+
+class VirtualBoxNode:
+    def __init__ (self, vmName, vmUuid, username, password):
+        self.name, self.uuid = vmName, vmUuid
+        self.extra = {'username': username, 'password': password}
+
+    def is_running (self):
+        out = proc_check_output (("VBoxManage", "list", "runningvms"))
+        return self.uuid in out
+
+    @property
+    def public_ip (self):
+        if self.is_running():
+            raise Exception ("I got no idea")
+        else:
+            return []
+
+
+    """
+    def __getattr__ (self, name):
+        def failer (*args, **kwargs):
+            raise Exception ("%s not implimented.\n args: %s\nkwargs: %s" % (name,args,kwargs))
+        return failer
+        """
+
+class VirtualBoxDriver:
+    def __init__ (self, hostos, hostname, key, secret):
+        self.hostos, self.hostname, = hostos, hostname
+        self.key, self.secret = key, secret
+        self.type = VirtualBoxDriver
+
+
+    def list_nodes (self):
+        nodes = proc_check_output (("VBoxManage", "list", "vms"))
+        nodes = nodes.split ("\n")
+        for node in nodes:
+            mo = reVboxListVMS.match(node)
+            if mo is not None:
+                vmName = mo.group(1)
+                vmUuid = mo.group(2)
+                yield VirtualBoxNode(vmName, vmUuid, self.key, self.secret)
+
+    def list_sizes (self):
+        return [512]
+
+    def list_images (self):
+        class DummyHostos:
+            name = self.hostos
+            id = self.hostos
+        return [DummyHostos()]
+
+    def create_node (self, name, image, size):
+        try:
+            proc_check_output (("VBoxManage", "createvm", "--name", name))
+        except:
+            raise Exception ("failed to create virtual machiene. (does '%s' already exist?)" % name)
+
+
+    def __nonzero__(self):
+        return True
+
+"""
+    def __getattr__ (self, name):
+        def failer (*args, **kwargs):
+            raise Exception ("%s not implimented.\n args: %s\nkwargs: %s" % (name,args,kwargs))
+        return failer
+"""
+
+
+
 def _driver():
     hostout = api.env.get('hostout')
     hosttype = api.env.get('hosttype')
 
-    if not hasattr(Provider, hosttype.upper()):
-        print "No hosttype called %s " % hosttype
-        hosts = [k.lower() for k,v in vars(Provider).items() if type(v) == type(1)]
-        print "Valid hostypes are %s" % ', '.join(hosts)
-        return None
-    driver = providers.get_driver( getattr(Provider, hosttype.upper()) )
+    #EC2_US_EAST    Amazon AWS US N. Virgina
+    #EC2_US_WEST    Amazon AWS US N. California
+    #EC2_EU_WEST    Amazon AWS EU Ireland
+    #RACKSPACE  Rackspace Cloud Servers
+    #SLICEHOST  Slicehost.com
+    #GOGRID GoGrid
+    #VPSNET VPS.net
+    #LINODE Linode.com
+    #VCLOUD vmware vCloud
+    #RIMUHOSTING    RimuHosting.com    
+
+    # _VIRTUAL_BOX virtual box 
+    
+    
+
+    if hosttype == "_VIRTUAL_BOX":
+        driver = VirtualBoxDriver;
+    else:
+	if not hasattr(Provider, hosttype.upper()):
+        	print "No hosttype called %s " % hosttype
+        	hosts = [k.lower() for k,v in vars(Provider).items() if type(v) == type(1)]
+        	print "Valid hostypes are %s" % ', '.join(hosts)
+        	return None
+    	driver = providers.get_driver( getattr(Provider, hosttype.upper()) )
     
     spec = inspect.getargspec(driver.__init__)
     for a in spec.args[1:]:
